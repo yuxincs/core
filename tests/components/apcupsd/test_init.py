@@ -100,7 +100,12 @@ async def test_multiple_integrations(hass: HomeAssistant) -> None:
 
 @pytest.mark.parametrize(
     "error",
-    (OSError(), asyncio.IncompleteReadError(partial=b"", expected=0)),
+    (
+        OSError(),
+        asyncio.IncompleteReadError(partial=b"", expected=0),
+        ValueError("raw status does not end with EOF"),
+        TimeoutError(),
+    ),
 )
 async def test_connection_error(hass: HomeAssistant, error: Exception) -> None:
     """Test connection error during integration setup."""

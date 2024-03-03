@@ -1,10 +1,11 @@
 """Test APCUPSd config flow setup process."""
+import asyncio
 from copy import copy
 from unittest.mock import patch
 
 import pytest
 
-from homeassistant.components.apcupsd import DOMAIN
+from homeassistant.components.apcupsd.const import DOMAIN
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SOURCE
 from homeassistant.core import HomeAssistant
@@ -22,10 +23,21 @@ def _patch_setup():
     )
 
 
-async def test_config_flow_cannot_connect(hass: HomeAssistant) -> None:
+@pytest.mark.parametrize(
+    "error",
+    (
+        OSError(),
+        asyncio.IncompleteReadError(partial=b"", expected=0),
+        ValueError("raw status does not end with EOF"),
+        TimeoutError(),
+    ),
+)
+async def test_config_flow_cannot_connect(
+    hass: HomeAssistant, error: Exception
+) -> None:
     """Test config flow setup with connection error."""
     with patch("aioapcaccess.request_status") as mock_get:
-        mock_get.side_effect = OSError()
+        mock_get.side_effect = error
 
         result = await hass.config_entries.flow.async_init(
             DOMAIN,

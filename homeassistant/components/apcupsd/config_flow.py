@@ -54,7 +54,7 @@ class ConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         try:
             async with asyncio.timeout(CONNECTION_TIMEOUT):
                 data = APCUPSdData(await aioapcaccess.request_status(host, port))
-        except (OSError, asyncio.IncompleteReadError, TimeoutError):
+        except (OSError, asyncio.IncompleteReadError, ValueError, TimeoutError):
             errors = {"base": "cannot_connect"}
             return self.async_show_form(
                 step_id="user", data_schema=_SCHEMA, errors=errors
